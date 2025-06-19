@@ -18,6 +18,18 @@
 	</properties>
 	<packaging>pom</packaging>
 
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+
+		<repository>
+			<id>nexus</id>
+			<url>http://workspace:18081/repository/maven-releases/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -38,6 +50,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hooniegit</groupId>
+			<artifactId>SpringInitializer</artifactId>
+			<version>0.1.0</version>
 		</dependency>
 	</dependencies>
 
