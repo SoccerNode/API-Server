@@ -1,4 +1,4 @@
-package com.SoccerNode.Coaches;
+package com.SoccerNode.Sidelined;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-public class CoachesApplication {
+public class SidelinedApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(CoachesApplication.class)
+        new SpringApplicationBuilder(SidelinedApplication.class)
                 .run(args);
     }
 

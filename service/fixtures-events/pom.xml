@@ -8,7 +8,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>Archiver</artifactId>
+    <artifactId>FixturesEvents</artifactId>
     <!--    <packaging>jar</packaging>-->
 
     <dependencies>

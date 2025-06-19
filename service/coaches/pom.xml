@@ -1,4 +1,5 @@
 <project>
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -8,7 +9,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>Archiver</artifactId>
+    <artifactId>Coaches</artifactId>
     <!--    <packaging>jar</packaging>-->
 
     <dependencies>

@@ -1,4 +1,4 @@
-package com.SoccerNode.Coaches;
+package com.SoccerNode.Trophies;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-public class CoachesApplication {
+public class TrophiesApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(CoachesApplication.class)
+        new SpringApplicationBuilder(TrophiesApplication.class)
                 .run(args);
     }
 
