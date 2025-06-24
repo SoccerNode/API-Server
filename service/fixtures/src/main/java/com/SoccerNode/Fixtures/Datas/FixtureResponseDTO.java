@@ -16,6 +16,7 @@ public class FixtureResponseDTO {
         @Id
         private ObjectId _id;
 
+        private Integer fixture;
         private Integer league;
         private Integer season;
         private Integer home;

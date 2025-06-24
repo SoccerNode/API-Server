@@ -5,6 +5,7 @@ import com.SoccerNode.Sidelined.Datas.PlayerSidelinedRepository;
 import com.SoccerNode.Sidelined.Datas.SidelinedResponseDTO;
 import com.SoccerNode.Sidelined.Datas.SidelinedResponseDTO.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +19,14 @@ import reactor.core.publisher.Mono;
 public class GetSidelined {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final PlayerSidelinedRepository playerSidelinedRepository;
     private final CoachSidelinedRepository coachSidelinedRepository;
 
     @Autowired
-    public GetSidelined(WebClient client, PlayerSidelinedRepository playerSidelinedRepository, CoachSidelinedRepository coachSidelinedRepository) {
+    public GetSidelined(WebClient client, MongoTemplate mongoTemplate, PlayerSidelinedRepository playerSidelinedRepository, CoachSidelinedRepository coachSidelinedRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.playerSidelinedRepository = playerSidelinedRepository;
         this.coachSidelinedRepository = coachSidelinedRepository;
     }

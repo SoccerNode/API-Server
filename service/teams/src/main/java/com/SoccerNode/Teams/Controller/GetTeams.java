@@ -5,6 +5,7 @@ import com.SoccerNode.Teams.Datas.TeamResponseDTO;
 import com.SoccerNode.Teams.Datas.TeamResponseDTO.*;
 import com.SoccerNode.Teams.Datas.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +19,14 @@ import reactor.core.publisher.Mono;
 public class GetTeams {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final TeamRepository teamRepository;
     private final VenueRepository venueRepository;
 
     @Autowired
-    public GetTeams(WebClient client, TeamRepository teamRepository, VenueRepository venueRepository) {
+    public GetTeams(WebClient client, MongoTemplate mongoTemplate, TeamRepository teamRepository, VenueRepository venueRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.teamRepository = teamRepository;
         this.venueRepository = venueRepository;
     }

@@ -4,6 +4,7 @@ import com.SoccerNode.Standings.Datas.StandingRepository;
 import com.SoccerNode.Standings.Datas.StandingResponseDTO;
 import com.SoccerNode.Standings.Datas.StandingResponseDTO.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,11 +18,13 @@ import reactor.core.publisher.Mono;
 public class GetStandings {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final StandingRepository standingRepository;
 
     @Autowired
-    public GetStandings(WebClient client, StandingRepository standingRepository) {
+    public GetStandings(WebClient client, MongoTemplate mongoTemplate, StandingRepository standingRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.standingRepository = standingRepository;
     }
 

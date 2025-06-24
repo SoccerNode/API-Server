@@ -5,6 +5,7 @@ import com.SoccerNode.Trophies.Datas.PlayerTrophyRepository;
 import com.SoccerNode.Trophies.Datas.TrophyResponseDTO;
 import com.SoccerNode.Trophies.Datas.TrophyResponseDTO.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +19,14 @@ import reactor.core.publisher.Mono;
 public class GetTrophies {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final PlayerTrophyRepository playerTrophyRepository;
     private final CoachTrophyRepository coachTrophyRepository;
 
     @Autowired
-    public GetTrophies(WebClient client, PlayerTrophyRepository playerTrophyRepository, CoachTrophyRepository coachTrophyRepository) {
+    public GetTrophies(WebClient client, MongoTemplate mongoTemplate, PlayerTrophyRepository playerTrophyRepository, CoachTrophyRepository coachTrophyRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.playerTrophyRepository = playerTrophyRepository;
         this.coachTrophyRepository = coachTrophyRepository;
     }

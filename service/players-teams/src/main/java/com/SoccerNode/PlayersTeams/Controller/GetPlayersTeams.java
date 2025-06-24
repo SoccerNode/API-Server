@@ -3,7 +3,11 @@ package com.SoccerNode.PlayersTeams.Controller;
 import com.SoccerNode.PlayersTeams.Datas.PlayerTeamRepository;
 import com.SoccerNode.PlayersTeams.Datas.PlayerTeamResponseDTO;
 import com.SoccerNode.PlayersTeams.Datas.PlayerTeamResponseDTO.*;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,16 +16,24 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/players/teams")
 public class GetPlayersTeams {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final PlayerTeamRepository playerTeamRepository;
 
     @Autowired
-    public GetPlayersTeams(WebClient client, PlayerTeamRepository playerTeamRepository) {
+    public GetPlayersTeams(WebClient client, MongoTemplate mongoTemplate, PlayerTeamRepository playerTeamRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.playerTeamRepository = playerTeamRepository;
     }
 
@@ -37,6 +49,38 @@ public class GetPlayersTeams {
                 .subscribe();
 
         return "Request completed";
+    }
+
+    @PostMapping("/cleansing")
+    public String removeDuplicated() {
+        deduplicatePlayersTeams();
+        return "Cleaned up";
+    }
+
+    public void deduplicatePlayersTeams() {
+        List<FlattenedTeam> all = mongoTemplate.findAll(FlattenedTeam.class);
+        Map<String, List<FlattenedTeam>> grouped = all.stream()
+                .collect(Collectors.groupingBy(l ->
+                        l.getPlayer() + "|" + l.getTeam()
+                ));
+
+        List<ObjectId> toDelete = new ArrayList<>();
+        for (List<FlattenedTeam> group : grouped.values()) {
+            if (group.size() <= 1) continue;
+
+            group.sort(Comparator.comparing((FlattenedTeam l) -> l.get_id().getTimestamp()).reversed());
+            toDelete.addAll(
+                    group.subList(1, group.size())
+                            .stream()
+                            .map(FlattenedTeam::get_id)
+                            .toList()
+            );
+        }
+
+        if (!toDelete.isEmpty()) {
+            Query deleteQuery = new Query(Criteria.where("_id").in(toDelete));
+            mongoTemplate.remove(deleteQuery, FlattenedTeam.class);
+        }
     }
 
     public Mono<PlayerTeamResponseDTO> getResponse(int player) {

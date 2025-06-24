@@ -3,7 +3,11 @@ package com.SoccerNode.FixturesPlayers.Controller;
 import com.SoccerNode.FixturesPlayers.Datas.FixturePlayerRepository;
 import com.SoccerNode.FixturesPlayers.Datas.FixturePlayerResponseDTO;
 import com.SoccerNode.FixturesPlayers.Datas.FixturePlayerResponseDTO.*;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,16 +16,24 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/fixtures/player")
 public class GetFixturesPlayers {
 
     private final WebClient client;
+    private final MongoTemplate mongoTemplate;
     private final FixturePlayerRepository fixturePlayerRepository;
 
     @Autowired
-    public GetFixturesPlayers(WebClient client, FixturePlayerRepository fixturePlayerRepository) {
+    public GetFixturesPlayers(WebClient client, MongoTemplate mongoTemplate, FixturePlayerRepository fixturePlayerRepository) {
         this.client = client;
+        this.mongoTemplate = mongoTemplate;
         this.fixturePlayerRepository = fixturePlayerRepository;
     }
 
@@ -37,6 +49,38 @@ public class GetFixturesPlayers {
                 .subscribe();
 
         return "Request completed";
+    }
+
+    @PostMapping("/cleansing")
+    public String removeDuplicated() {
+        deduplicateFixturesPlayers();
+        return "Cleaned up";
+    }
+
+    public void deduplicateFixturesPlayers() {
+        List<FlattenedFixturePlayer> all = mongoTemplate.findAll(FlattenedFixturePlayer.class);
+        Map<String, List<FlattenedFixturePlayer>> grouped = all.stream()
+                .collect(Collectors.groupingBy(l ->
+                        l.getFixture() + "|" + l.getTeam() + "|" + l.getPlayer()
+                ));
+
+        List<ObjectId> toDelete = new ArrayList<>();
+        for (List<FlattenedFixturePlayer> group : grouped.values()) {
+            if (group.size() <= 1) continue;
+
+            group.sort(Comparator.comparing((FlattenedFixturePlayer l) -> l.get_id().getTimestamp()).reversed());
+            toDelete.addAll(
+                    group.subList(1, group.size())
+                            .stream()
+                            .map(FlattenedFixturePlayer::get_id)
+                            .toList()
+            );
+        }
+
+        if (!toDelete.isEmpty()) {
+            Query deleteQuery = new Query(Criteria.where("_id").in(toDelete));
+            mongoTemplate.remove(deleteQuery, FlattenedFixturePlayer.class);
+        }
     }
 
     public Mono<FixturePlayerResponseDTO> getResponse(int fixture) {
