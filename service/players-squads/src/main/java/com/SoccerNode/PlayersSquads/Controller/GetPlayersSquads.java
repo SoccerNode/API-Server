@@ -37,13 +37,33 @@ public class GetPlayersSquads {
         this.playerSquadRepository = playerSquadRepository;
     }
 
+//    @PostMapping()
+//    public String getPlayersSquads(@RequestParam("team") int team) {
+//        Mono<PlayerSquadResponseDTO> mono = getResponse(team);
+//        Flux<FlattenedSquad> squad = getFlattenedViaDTO(mono);
+//
+//        squad
+//                .map(playerSquadRepository::save)
+//                .doOnNext(saved -> System.out.println("Saved: " + saved))
+//                .doOnError(e -> System.err.println("Save error: " + e.getMessage()))
+//                .subscribe();
+//
+//        return "Request completed";
+//    }
+
     @PostMapping()
     public String getPlayersSquads(@RequestParam("team") int team) {
         Mono<PlayerSquadResponseDTO> mono = getResponse(team);
-        Flux<FlattenedSquad> squad = getFlattenedViaDTO(mono);
+        Flux<FlattenedSquad> squadFlux = getFlattenedViaDTO(mono).cache(); // Flux 캐시: 여러 구독에 동일 Flux 사용
 
-        squad
-                .map(playerSquadRepository::save)
+        squadFlux
+                .take(1)
+                .flatMap(first -> {
+                    Query deleteQuery = new Query(Criteria.where("team").is(first.getTeam()));
+                    return Mono.fromRunnable(() -> mongoTemplate.remove(deleteQuery, FlattenedSquad.class));
+                })
+                .thenMany(squadFlux) // 삭제 후 데이터 삽입
+                .flatMap(playerSquadRepository::save)
                 .doOnNext(saved -> System.out.println("Saved: " + saved))
                 .doOnError(e -> System.err.println("Save error: " + e.getMessage()))
                 .subscribe();
