@@ -6,6 +6,7 @@ import com.SoccerNode.PlayersSquads.Datas.PlayerSquadResponseDTO.*;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,11 +28,11 @@ import java.util.stream.Collectors;
 public class GetPlayersSquads {
 
     private final WebClient client;
-    private final MongoTemplate mongoTemplate;
+    private final ReactiveMongoTemplate mongoTemplate;
     private final PlayerSquadRepository playerSquadRepository;
 
     @Autowired
-    public GetPlayersSquads(WebClient client, MongoTemplate mongoTemplate, PlayerSquadRepository playerSquadRepository) {
+    public GetPlayersSquads(WebClient client, ReactiveMongoTemplate mongoTemplate, PlayerSquadRepository playerSquadRepository) {
         this.client = client;
         this.mongoTemplate = mongoTemplate;
         this.playerSquadRepository = playerSquadRepository;
@@ -54,15 +55,15 @@ public class GetPlayersSquads {
     @PostMapping()
     public String getPlayersSquads(@RequestParam("team") int team) {
         Mono<PlayerSquadResponseDTO> mono = getResponse(team);
-        Flux<FlattenedSquad> squadFlux = getFlattenedViaDTO(mono).cache(); // Flux 캐시: 여러 구독에 동일 Flux 사용
+        Flux<FlattenedSquad> squadFlux = getFlattenedViaDTO(mono).cache();
 
         squadFlux
                 .take(1)
                 .flatMap(first -> {
                     Query deleteQuery = new Query(Criteria.where("team").is(first.getTeam()));
-                    return Mono.fromRunnable(() -> mongoTemplate.remove(deleteQuery, FlattenedSquad.class));
+                    return mongoTemplate.remove(deleteQuery, FlattenedSquad.class);
                 })
-                .thenMany(squadFlux) // 삭제 후 데이터 삽입
+                .thenMany(squadFlux)
                 .flatMap(playerSquadRepository::save)
                 .doOnNext(saved -> System.out.println("Saved: " + saved))
                 .doOnError(e -> System.err.println("Save error: " + e.getMessage()))
