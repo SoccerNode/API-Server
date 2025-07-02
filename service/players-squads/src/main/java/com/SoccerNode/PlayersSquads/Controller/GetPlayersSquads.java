@@ -71,17 +71,7 @@ public class GetPlayersSquads {
 
         return "Request completed";
     }
-
-    @PostMapping("/cleansing")
-    public String removeDuplicated() {
-        deduplicateSquads();
-        return "Cleaned up";
-    }
-
-    public void deduplicateSquads() {
-        // RM ALL
-    }
-
+    
     public Mono<PlayerSquadResponseDTO> getResponse(int team) {
         return this.client.get()
                 .uri(uriBuilder -> uriBuilder
